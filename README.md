@@ -2,32 +2,36 @@
 ## What is a CTE?  
 ![CTE Syntax](https://learnsql.com/blog/sql-common-table-expression-guide/cte_syntax_example.jpg)  
   
-CTE's are temporary result sets that are defined before a SELECT statement and execute with the SELECT statement. These tables can be refrenced within the same query and are extremely useful tools when querying complex data.
-They are easier read and work with when compared to subquieres, and are an essental tool.
+CTEs are temporary result sets that are defined before a SELECT statement and executed alongside it. They provide an efficient way to structure complex queries, improving code readability and maintainability. The temporary result sets created by CTEs can be referenced multiple times within the same query, making them especially useful when dealing with complex data. Unlike subqueries, which can only be used once in a query, CTEs offer the advantage of repeatability and clarity, making them easier to understand and work with.
 
 ## Inventory Replenishment Analysis CTE  
-Below is a simple CTE used to extract product details to determine which products need to be reordered. The CTE JOINS the tables that contain the necessary product details, while the SELECT statment then filters down products whose stock is equal to or below the reorder point to determine what needs to be reordered.  
+CTEs can range from simple to highly complex. For example, consider a scenario where we need to extract product inventory details to determine which products need to be reordered. A simple, single CTE defined as LowInventoryProducts can be used to aggregate all products with low inventory levels. The main SELECT statement would then filter out products whose stock levels are equal to or below their reorder point, helping businesses quickly identify items that require replenishment.  
 ```
 --SQL
-with 
-LowInventoryProducts as 
-(
-SELECT 
-	P.[EnglishProductName],
-	P.[SafetyStockLevel],
-	P.[ReorderPoint],
-	P.[DaysToManufacture],
-	PI.[MovementDate],
-	PI.[UnitsBalance]
-FROM [AdventureWorksDW2022].[dbo].[FactProductInventory] AS PI
-JOIN [AdventureWorksDW2022].[dbo].[DimProduct] AS P 
-ON PI.[ProductKey] = P.[ProductKey] 
+with LowInventoryProducts AS (
+    SELECT 
+        P.[EnglishProductName],
+        SUM(PI.[UnitsBalance]) AS TotalUnitsInStock,
+        P.[SafetyStockLevel],
+        P.[ReorderPoint]
+    FROM [AdventureWorksDW2022].[dbo].[FactProductInventory] AS PI
+    JOIN [AdventureWorksDW2022].[dbo].[DimProduct] AS P
+        ON PI.[ProductKey] = P.[ProductKey]
+    GROUP BY 
+        P.[EnglishProductName],
+        P.[SafetyStockLevel],
+        P.[ReorderPoint]
 )
-SELECT *
+SELECT 
+    EnglishProductName,
+    TotalUnitsInStock,
+    SafetyStockLevel,
+    ReorderPoint
 FROM LowInventoryProducts
-WHERE UnitsBalance <= ReorderPoint
+WHERE TotalUnitsInStock <= ReorderPoint
 
-```
+```	
+As you can see, a simple CTE can efficiently extract product inventory details in a modular and readable way. While this basic usage demonstrates how CTEs work and highlights their benefits, there are more complex scenarios where CTEs become essential.		
 
 ## Top 5 Selling Products by Category CTE
 
