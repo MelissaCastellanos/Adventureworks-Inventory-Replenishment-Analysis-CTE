@@ -31,9 +31,12 @@ FROM LowInventoryProducts
 WHERE TotalUnitsInStock <= ReorderPoint
 
 ```	
-As you can see, a simple CTE can efficiently extract product inventory details in a modular and readable way. While this basic usage demonstrates how CTEs work and highlights their benefits, there are more complex scenarios where CTEs become essential.		
+A simple CTE, like the one above can efficiently extract product inventory details, while avoiding common GROUP BY issues. While this basic usage demonstrates how CTEs work and highlights their benefits, there are more complex scenarios where CTEs become essential.		
 
-## Top 5 Selling Products by Category CTE
+## Top 5 Selling Products by Category CTE	
+In some instances, defining two or more CTEs is necessary to help us break down complex queries into smaller, more manageable steps. This approach improves readability and simplifies troubleshooting by allowing each CTE to handle a specific part of the logic. It also enhances performance by letting one CTE build on another, which reduces redundant calculations or operations on large datasets.	
+
+In the following query, the first CTE retrieves and prepares sales data by performing the initial join operations between the tables. The second CTE builds on this, calculating the total sales for each product and using the RANK() window function to rank products based on their sales within each product category. The final query filters the results to display only the top 5 products per category by selecting rows with a rank of 5 or less. This modular approach simplifies the query by breaking it into logical, manageable steps.
 
 ```
 --SQL
